@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>酷炫下班倒计时</title>
+    <title>智能上下班倒计时</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         body {
@@ -93,23 +93,94 @@
             color: #00ffff;
         }
         
-        .set-time {
-            margin-top: 20px;
+        /* 设置按钮样式 */
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
         }
         
-        input {
+        .settings-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 30px #00ffff;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #ff00ff;
+        }
+        
+        .close-btn:hover {
+            color: #ff0000;
+        }
+        
+        .time-input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .time-input-group label {
+            font-size: 1.2em;
+            min-width: 120px;
+            text-align: right;
+        }
+        
+        input[type="number"] {
             padding: 12px;
             font-size: 1.1em;
             border: 2px solid #00ffff;
             border-radius: 10px;
-            margin: 0 10px;
+            margin: 0 5px;
             background: rgba(0, 0, 0, 0.5);
             color: white;
             text-align: center;
             outline: none;
+            width: 80px;
         }
         
-        input:focus {
+        input[type="number"]:focus {
             box-shadow: 0 0 15px #00ffff;
         }
         
@@ -125,6 +196,7 @@
             transition: all 0.3s;
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
             font-family: 'Orbitron', sans-serif;
+            margin: 10px;
         }
         
         button:hover {
@@ -204,24 +276,100 @@
                 opacity: 0;
             }
         }
+        
+        .config-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #00ffff;
+            text-align: center;
+        }
+        
+        /* 成功提示弹窗 */
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .success-content {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 30px #00ff00;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: successPulse 1s infinite;
+        }
+        
+        @keyframes successPulse {
+            0% { box-shadow: 0 0 10px #00ff00; }
+            50% { box-shadow: 0 0 30px #00ff00; }
+            100% { box-shadow: 0 0 10px #00ff00; }
+        }
+        
+        .success-icon {
+            font-size: 4em;
+            color: #00ff00;
+            margin-bottom: 20px;
+        }
+        
+        .success-message {
+            font-size: 1.5em;
+            color: #00ff00;
+            font-family: 'Orbitron', sans-serif;
+        }
     </style>
 </head>
 <body>
     <!-- 粒子背景 -->
     <div class="particles" id="particles"></div>
     
+    <!-- 设置按钮 -->
+    <button class="settings-btn" onclick="openSettings()">⚙️</button>
+    
+    <!-- 设置弹窗 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeSettings()">&times;</span>
+            <div class="config-title">设置工作时间</div>
+            <div class="time-input-group">
+                <label for="workStartHour">上班时间:</label>
+                <input type="number" id="workStartHour" min="0" max="23" value="9"> :
+                <input type="number" id="workStartMinute" min="0" max="59" value="0">
+            </div>
+            <div class="time-input-group">
+                <label for="workEndHour">下班时间:</label>
+                <input type="number" id="workEndHour" min="0" max="23" value="18"> :
+                <input type="number" id="workEndMinute" min="0" max="59" value="0">
+            </div>
+            <div>
+                <button onclick="setWorkTime()">保存设置</button>
+                <button onclick="loadConfig()">加载当前设置</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 成功提示弹窗 -->
+    <div class="success-modal" id="successModal">
+        <div class="success-content">
+            <div class="success-icon">✓</div>
+            <div class="success-message" id="successMessage">设置保存成功!</div>
+        </div>
+    </div>
+    
     <div class="container">
-        <h1>下班倒计时</h1>
+        <h1>智能倒计时</h1>
         <div class="message" id="message">距离下班还有:</div>
         <div class="time-display" id="countdown">--:--:--</div>
-        <div class="set-time">
-            <label for="offTime">设置下班时间: </label>
-            <input type="time" id="offTime" value="18:00">
-            <button onclick="setOffTime()">设置</button>
-        </div>
-        <div class="set-time">
-            <button onclick="setToDefault()">恢复默认(18:00)</button>
-        </div>
     </div>
 
     <script>
@@ -255,94 +403,130 @@
             }
         }
         
-        // 默认下班时间 (18:00)
-        let offTime = new Date();
-        offTime.setHours(18, 0, 0, 0);
-        
-        // 如果当前时间已超过18:00，则设为明天18:00
-        const now = new Date();
-        if (now.getHours() >= 18) {
-            offTime.setDate(offTime.getDate() + 1);
-        }
-        
         // 上一个显示的时间（用于动画效果）
         let lastTime = "";
         
+        // 打开设置弹窗
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+            loadConfig();
+        }
+        
+        // 关闭设置弹窗
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+        
+        // 显示成功提示
+        function showSuccess(message) {
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('successModal').style.display = 'flex';
+            
+            // 2秒后自动关闭
+            setTimeout(function() {
+                document.getElementById('successModal').style.display = 'none';
+            }, 2000);
+        }
+        
+        // 点击弹窗外部关闭弹窗
+        window.onclick = function(event) {
+            const settingsModal = document.getElementById('settingsModal');
+            const successModal = document.getElementById('successModal');
+            
+            if (event.target == settingsModal) {
+                closeSettings();
+            } else if (event.target == successModal) {
+                successModal.style.display = 'none';
+            }
+        }
+        
         // 更新倒计时
         function updateCountdown() {
-            const now = new Date();
-            const diff = offTime - now;
-            
-            if (diff <= 0) {
-                document.getElementById('countdown').textContent = '下班时间到了!';
-                document.getElementById('countdown').className = 'time-display finished';
-                document.getElementById('message').textContent = '🎉 可以下班啦! 🎉';
-                return;
-            }
-            
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            const timeString = 
-                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            // 添加数字跳动效果
-            if (lastTime !== timeString) {
-                const countdownElement = document.getElementById('countdown');
-                const digits = timeString.split('');
-                let html = '';
-                
-                for (let i = 0; i < digits.length; i++) {
-                    if (digits[i] === ':') {
-                        html += '<span>:</span>';
+            fetch('/api/countdown')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.finished) {
+                        document.getElementById('countdown').textContent = '时间到了!';
+                        document.getElementById('countdown').className = 'time-display finished';
+                        document.getElementById('message').textContent = '🎉 时间到了! 🎉';
                     } else {
-                        html += `<span class="digit">${digits[i]}</span>`;
+                        document.getElementById('message').textContent = data.message;
+                        const timeString = data.formatted;
+                        
+                        // 添加数字跳动效果
+                        if (lastTime !== timeString) {
+                            const countdownElement = document.getElementById('countdown');
+                            const digits = timeString.split('');
+                            let html = '';
+                            
+                            for (let i = 0; i < digits.length; i++) {
+                                if (digits[i] === ':') {
+                                    html += '<span>:</span>';
+                                } else {
+                                    html += `<span class="digit">${digits[i]}</span>`;
+                                }
+                            }
+                            
+                            countdownElement.innerHTML = html;
+                            lastTime = timeString;
+                        }
                     }
-                }
-                
-                countdownElement.innerHTML = html;
-                lastTime = timeString;
-            }
+                })
+                .catch(error => {
+                    console.error('Error fetching countdown:', error);
+                });
         }
         
-        // 设置下班时间
-        function setOffTime() {
-            const timeInput = document.getElementById('offTime').value;
-            if (!timeInput) return;
+        // 设置工作时间
+        function setWorkTime() {
+            const startHour = document.getElementById('workStartHour').value;
+            const startMinute = document.getElementById('workStartMinute').value;
+            const endHour = document.getElementById('workEndHour').value;
+            const endMinute = document.getElementById('workEndMinute').value;
             
-            const [hours, minutes] = timeInput.split(':').map(Number);
-            
-            offTime = new Date();
-            offTime.setHours(hours, minutes, 0, 0);
-            
-            // 如果设置的时间早于当前时间，则设为明天
-            const now = new Date();
-            if (offTime <= now) {
-                offTime.setDate(offTime.getDate() + 1);
-            }
-            
-            document.getElementById('countdown').className = 'time-display';
-            updateCountdown();
+            fetch('/api/set_work_time', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    start_hour: parseInt(startHour),
+                    start_minute: parseInt(startMinute),
+                    end_hour: parseInt(endHour),
+                    end_minute: parseInt(endMinute)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 使用自定义成功提示弹窗
+                showSuccess(data.message);
+                // 重新加载倒计时
+                updateCountdown();
+                // 关闭设置弹窗
+                closeSettings();
+            })
+            .catch(error => {
+                console.error('Error setting work time:', error);
+                showSuccess('设置失败');
+            });
         }
         
-        // 恢复默认下班时间
-        function setToDefault() {
-            document.getElementById('offTime').value = '18:00';
-            offTime = new Date();
-            offTime.setHours(18, 0, 0, 0);
-            
-            const now = new Date();
-            if (now.getHours() >= 18) {
-                offTime.setDate(offTime.getDate() + 1);
-            }
-            
-            document.getElementById('countdown').className = 'time-display';
-            document.getElementById('message').textContent = '距离下班还有:';
-            updateCountdown();
+        // 加载当前配置
+        function loadConfig() {
+            fetch('/api/get_config')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('workStartHour').value = data.work_start_hour;
+                    document.getElementById('workStartMinute').value = data.work_start_minute;
+                    document.getElementById('workEndHour').value = data.work_end_hour;
+                    document.getElementById('workEndMinute').value = data.work_end_minute;
+                })
+                .catch(error => {
+                    console.error('Error loading config:', error);
+                });
         }
         
-        // 页面加载完成后创建粒子
+        // 页面加载完成后创建粒子并初始化
         window.addEventListener('load', function() {
             createParticles();
         });
